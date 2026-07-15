@@ -46,6 +46,11 @@
       %+  spin:loader  ball
       :~  (manifest:loader 0)
           [%over %& [/ %'main.sig'] [[/ %sig] ~]]
+          =/  init-deps=json
+            %-  pairs:enjs:format
+            :~  contacts+s+'/apps/contacts.git_desk/desk/data/contacts.contacts'
+            ==
+          [%fall %& [/ %'deps.json'] [[/ %json] init-deps]]
           [%fall %& [/ %'labels.wallet_labels'] [[/wallet %labels] init-lbls]]
           [%fall %& [/ %'secrets.wallet_secrets'] [[/wallet %secrets] init-sec]]
           [%fall %& [/ %'drafts.wallet_drafts'] [[/wallet %drafts] *(map @t transaction:drft)]]
@@ -2381,11 +2386,28 @@
 ::
 ::  +load-contacts: peek contacts overlay dir for send-to picker
 ::
-++  contacts-overlay-road  [%& %| /apps/'contacts.contacts'/overlay]
+++  load-deps
+  =/  m  (fiber:fiber:nexus ,json)
+  ^-  form:m
+  =/  rd=road:tarball  (nex-road [%& ~ %'deps.json'])
+  ;<  exists=?  bind:m  (peek-exists:io rd)
+  ?.  exists  (pure:m ~)
+  ;<  =view:nexus  bind:m  (peek:io rd ~)
+  ?.  ?=([%file *] view)  (pure:m ~)
+  (pure:m !<(json (need-vase:tarball sang.view)))
 ++  load-contacts
   =/  m  (fiber:fiber:nexus ,(map @t (map @t json)))
   ^-  form:m
-  ;<  =view:nexus  bind:m  (peek:io contacts-overlay-road ~)
+  ;<  deps=json  bind:m  load-deps
+  =/  contacts-path=path
+    =/  pax=(unit @t)
+      ?.  ?=([%o *] deps)  ~
+      =/  val  (~(get by p.deps) 'contacts')
+      ?~(val ~ ?.(?=([%s *] u.val) ~ `p.u.val))
+    ?~  pax  /apps/'contacts.git_desk'/desk/data/'contacts.contacts'
+    (stab u.pax)
+  =/  overlay-road=road:tarball  [%& %| (weld contacts-path /overlay)]
+  ;<  =view:nexus  bind:m  (peek:io overlay-road ~)
   ?.  ?=([%ball *] view)  (pure:m ~)
   =/  =lump:tarball  (fall fil.ball.view *lump:tarball)
   %-  pure:m
