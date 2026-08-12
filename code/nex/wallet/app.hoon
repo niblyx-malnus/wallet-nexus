@@ -18,6 +18,7 @@
 /<  drft          /lib/tx/draft.hoon
 /<  b329          /lib/bip329.hoon
 /<  taproot       /lib/taproot.hoon
+/<  sh            /lib/shell.hoon
 /&  man           /man/wallet/app/readme.md
 =,  wt
 =<  ^-  nexus:nexus
@@ -508,8 +509,15 @@
         ?.  =(src our)
           ;<  ~  bind:m  (send-simple:srv:h eyre-id [[403 ~] `(as-octs:mimes:html 'Forbidden')])
           (pure:m ~)
-        ;<  here=rail:tarball  bind:m  get-here-abs:io
-        =/  nexus-root=tape  (spud (snip (snip path.here)))
+        ::  our own address from grant.json (here:sh), NOT a %here walk —
+        ::  the sandbox grants no peek /, so the walk would crash. ~ before
+        ::  approval: serve a pending notice instead of crashing.
+        ;<  base=(unit @t)  bind:m  (here:sh rail)
+        ?~  base
+          ;<  ~  bind:m
+            (send-simple:srv:h eyre-id [[503 ~] `(as-octs:mimes:html 'Wallet awaiting sandbox approval')])
+          (pure:m ~)
+        =/  nexus-root=tape  (spud (snip (snip (weld `path`(stab u.base) path.rail))))
         =/  [site=path args=quay:eyre]  (parse-url:http-utils url.request.req)
         =/  prefix=path  /groundwire/wallet
         =/  suffix=path
@@ -2339,9 +2347,14 @@
 ++  ensure-public-poke
   =/  m  (fiber:fiber:nexus ,~)
   ^-  form:m
+  ::  only register once approved: a jailed app can neither self-address
+  ::  (peek /) nor reach the registry. grant.json present (here:sh non-~)
+  ::  == approved; the approval reload re-runs main.sig, so this fires then.
+  ;<  base=(unit @t)  bind:m  (here:sh rail)
+  ?~  base  (pure:m ~)
+  =/  self=rail:tarball  [(weld `path`(stab u.base) path.rail) name.rail]
   ;<  ~  bind:m  reg-register:io
-  ;<  here=rail:tarball  bind:m  get-here-abs:io
-  (reg-how:io /public [~ (sy ~[[%& %& here]]) ~])
+  (reg-how:io /public [~ (sy ~[[%& %& self]]) ~])
 ::  +ensure-simple-wallet: create simple wallet if none labeled 'gwbtc:simple'
 ::
 ++  ensure-simple-wallet
