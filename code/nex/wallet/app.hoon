@@ -69,7 +69,7 @@
             ==
             :-  'peek'
             :-  %a
-            :~  (line '/apps/contacts.desk/desk/data/contacts.contacts' 'read the contacts it integrates with (labels/overlays)')
+            :~  (line '@contacts' 'read the contacts it integrates with, resolved by alias (labels/overlays)')
             ==
         ==
       %+  spin:loader  ball
@@ -2428,12 +2428,40 @@
   ;<  =view:nexus  bind:m  (peek:io rd ~)
   ?.  ?=([%file *] view)  (pure:m ~)
   (pure:m !<(json (need-vase:tarball sang.view)))
+::  +contacts-alias-path: the contacts path resolved BY ALIAS. The shell
+::  writes the concrete road for each alias we asked for (weir.json's
+::  '@contacts') into grant.json's `aliases` map on approval. Reading it
+::  here means we never hardcode where contacts lives — it follows renames
+::  (like git_desk -> desk) and reinstalls. ~ if not approved / not present.
+++  contacts-alias-path
+  =/  m  (fiber:fiber:nexus ,(unit @t))
+  ^-  form:m
+  =/  rd=road:tarball  (nex-road [%& ~ %'grant.json'])
+  ;<  exists=?  bind:m  (peek-exists:io rd)
+  ?.  exists  (pure:m ~)
+  ;<  =view:nexus  bind:m  (peek:io rd ~)
+  ?.  ?=([%file *] view)  (pure:m ~)
+  =/  jon=(unit json)  (mole |.(!<(json (need-vase:tarball sang.view))))
+  ?~  jon  (pure:m ~)
+  ?.  ?=([%o *] u.jon)  (pure:m ~)
+  =/  al=(unit json)  (~(get by p.u.jon) 'aliases')
+  ?~  al  (pure:m ~)
+  ?.  ?=([%o *] u.al)  (pure:m ~)
+  =/  cv=(unit json)  (~(get by p.u.al) 'contacts')
+  ?~  cv  (pure:m ~)
+  ?.  ?=([%s *] u.cv)  (pure:m ~)
+  ?:  =('' p.u.cv)  (pure:m ~)
+  (pure:m `p.u.cv)
 ++  load-contacts
   =/  m  (fiber:fiber:nexus ,(map @t (map @t json)))
   ^-  form:m
+  ::  prefer the alias-resolved path; fall back to deps.json, then the
+  ::  conventional location — so we still "try" to reach contacts pre-approval.
+  ;<  aliased=(unit @t)  bind:m  contacts-alias-path
   ;<  deps=json  bind:m  load-deps
   =/  contacts-path=path
     =/  pax=(unit @t)
+      ?^  aliased  aliased
       ?.  ?=([%o *] deps)  ~
       =/  val  (~(get by p.deps) 'contacts')
       ?~(val ~ ?.(?=([%s *] u.val) ~ `p.u.val))
