@@ -517,7 +517,9 @@
           ;<  ~  bind:m
             (send-simple:srv:h eyre-id [[503 ~] `(as-octs:mimes:html 'Wallet awaiting sandbox approval')])
           (pure:m ~)
-        =/  nexus-root=tape  (spud (snip (snip (weld `path`(stab u.base) path.rail))))
+        ::  here:sh IS the nexus root (what the old snip-snip of the fiber
+        ::  rail recovered) — use it directly.
+        =/  nexus-root=tape  (trip u.base)
         =/  [site=path args=quay:eyre]  (parse-url:http-utils url.request.req)
         =/  prefix=path  /groundwire/wallet
         =/  suffix=path
@@ -2352,7 +2354,8 @@
   ::  == approved; the approval reload re-runs main.sig, so this fires then.
   ;<  base=(unit @t)  bind:m  (here:sh rail)
   ?~  base  (pure:m ~)
-  =/  self=rail:tarball  [(weld `path`(stab u.base) path.rail) name.rail]
+  ::  main.sig sits at the nexus root, so its rail is [<root> main.sig].
+  =/  self=rail:tarball  [(stab u.base) name.rail]
   ;<  ~  bind:m  reg-register:io
   (reg-how:io /public [~ (sy ~[[%& %& self]]) ~])
 ::  +ensure-simple-wallet: create simple wallet if none labeled 'gwbtc:simple'
