@@ -979,6 +979,7 @@
   ;html
     ;head
       ;title: {(trip acct-name)}
+      ;link(rel "icon", type "image/svg+xml", href "/grubbery/tiles/icon/wallet.git_desk");
       ;meta(charset "utf-8");
       ;meta(name "viewport", content "width=device-width, initial-scale=1");
       ;+  feather:feather
@@ -1093,6 +1094,7 @@
   ;html
     ;head
       ;title: Send - {(trip acct-name)}
+      ;link(rel "icon", type "image/svg+xml", href "/grubbery/tiles/icon/wallet.git_desk");
       ;meta(charset "utf-8");
       ;meta(name "viewport", content "width=device-width, initial-scale=1");
       ;+  feather:feather
