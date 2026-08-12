@@ -193,7 +193,7 @@
   ;html
     ;head
       ;title: Wallet
-      ;link(rel "icon", type "image/svg+xml", href "/grubbery/tiles/icon/wallet.git_desk");
+      ;link(rel "icon", type "image/svg+xml", href "/grubbery/tiles/icon/wallet.desk/wallet.wallet_app");
       ;meta(charset "utf-8");
       ;meta(name "viewport", content "width=device-width, initial-scale=1");
       ;+  feather:feather
