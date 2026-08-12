@@ -43,12 +43,45 @@
             ~[[xpub.wal seed.wal] [xpub.fau-wal seed.fau-wal]]
             *(map @t @t)
         ==
+      =/  tile=json
+        %-  pairs:enjs:format
+        :~  title+s+'Wallet'
+            info+s+'Bitcoin SPV wallet'
+            color+s+'#f7931a'
+            href+s+'/groundwire/wallet'
+        ==
+      =/  icon=mime
+        :-  /image/'svg+xml'
+        %-  as-octs:mimes:html
+        '''
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+        '''
+      ::  weir-json: the roads this nexus reaches — the sandbox ask the
+      ::  user consents to in their shell.
+      =/  weir-json=json
+        =/  line
+          |=([r=@t w=@t] `json`(pairs:enjs:format ~[['road' s+r] ['why' s+w]]))
+        %-  pairs:enjs:format
+        :~  :-  'poke'
+            :-  %a
+            :~  (line '/sys/bowl.sig' 'entropy for key generation and the current time/ship')
+                (line '/sys/eyre/' 'bind /groundwire/wallet and serve the wallet UI')
+            ==
+            :-  'peek'
+            :-  %a
+            :~  (line '/apps/contacts.desk/desk/data/contacts.contacts' 'read the contacts it integrates with (labels/overlays)')
+            ==
+        ==
       %+  spin:loader  ball
       :~  (manifest:loader 0)
+          [%over %& [/ %'icon.svg'] [[/ %mime] icon]]
+          [%over %& [/ %'alias.json'] [[/ %json] (pairs:enjs:format ~[['name' s+'wallet'] ['description' s+'Bitcoin SPV wallet']])]]
+          [%over %& [/ %'weir.json'] [[/ %json] weir-json]]
+          [%over %& [/ %'tile.json'] [[/ %json] tile]]
           [%over %& [/ %'main.sig'] [[/ %sig] ~]]
           =/  init-deps=json
             %-  pairs:enjs:format
-            :~  contacts+s+'/apps/contacts.git_desk/desk/data/contacts.contacts'
+            :~  contacts+s+'/apps/contacts.desk/desk/data/contacts.contacts'
             ==
           [%fall %& [/ %'deps.json'] [[/ %json] init-deps]]
           [%fall %& [/ %'labels.wallet_labels'] [[/wallet %labels] init-lbls]]
@@ -463,7 +496,7 @@
           [[%ui ~] %'http.sig']
         ;<  ~  bind:m  (rise-wait:io prod "%wallet /ui/http: failed")
         =/  prefix=path  /groundwire/wallet
-        ;<  ~  bind:m  (bind-http:io [~ prefix])
+        ;<  ~  bind:m  (bind-http-self:io [~ prefix])
         (http-dispatch:io %wallet)
           ::  /ui/requests/*: individual HTTP request handlers
           ::
@@ -2404,7 +2437,7 @@
       ?.  ?=([%o *] deps)  ~
       =/  val  (~(get by p.deps) 'contacts')
       ?~(val ~ ?.(?=([%s *] u.val) ~ `p.u.val))
-    ?~  pax  /apps/'contacts.git_desk'/desk/data/'contacts.contacts'
+    ?~  pax  /apps/'contacts.desk'/desk/data/'contacts.contacts'
     (stab u.pax)
   =/  overlay-road=road:tarball  [%& %| (weld contacts-path /overlay)]
   ;<  =view:nexus  bind:m  (peek:io overlay-road ~)
